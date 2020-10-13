@@ -10,6 +10,8 @@
 
 #pragma comment(lib,"Dwmapi.lib")
 
+const uint32_t kCaptureTimes = 10;
+
 int main()
 {
     std::cout << "Hello World!\n";
@@ -50,17 +52,21 @@ int main()
 	head->biWidth = width;
 	head->biHeight =  -heigh;
 	head->biPlanes = 1;
-	// creates a DIB that applications can write to directly. 
+	// creates a DIB（stands for Device Independent Bitmap） that applications can write to directly.
 	// The function gives you a pointer to the location of the bitmap bit values. 
 	bmp = CreateDIBSection(dc, &bi, DIB_RGB_COLORS, (void**)&bits, nullptr, 0);
 
 	// selects an object into the specified device context (DC).
 	SelectObject(dc, bmp);
 
-	// performs a bit-block transfer of the color data corresponding to a rectangle of pixels from the specified source device context into a destination device context.
-	BitBlt(dc, 0, 0, width, heigh, src_dc, 0, 0, rop);
-
-	ImageHelper::SaveBitmapToFile(bmp, "bmp.bmp");
+	for (int i = 0; i < kCaptureTimes; i++)
+	{
+		// performs a bit-block transfer of the color data corresponding to a rectangle of pixels from the specified source device context into a destination device context.
+		BitBlt(dc, 0, 0, width, heigh, src_dc, 0, 0, rop);
+		char filename[255];
+		sprintf(filename, "picture(%d).bmp", i);
+		ImageHelper::SaveBitmapToFile(bmp, filename);
+	}
 
 	// release dc
 	DeleteDC(dc);
