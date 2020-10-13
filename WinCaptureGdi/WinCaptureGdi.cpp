@@ -1,20 +1,51 @@
-﻿// WinCaptureGdi.cpp : 此文件包含 "main" 函数。程序执行将在此处开始并结束。
+// WinCaptureGdi.cpp : 此文件包含 "main" 函数。程序执行将在此处开始并结束。
 //
 
 #include <iostream>
+#include <dwmapi.h>
+#include <wingdi.h>
+#include <Windows.h>
+
+#include "ImageHelper.h"
+
+#pragma comment(lib,"Dwmapi.lib")
 
 int main()
 {
     std::cout << "Hello World!\n";
+
+	auto dc = CreateCompatibleDC(nullptr);
+	auto src_dc = GetDC(nullptr);
+
+	DWORD rop = SRCCOPY;
+	BOOL bDwmEnable = TRUE;
+	auto hr = DwmIsCompositionEnabled(&bDwmEnable);
+
+	if (hr == S_OK && !bDwmEnable) {
+		rop |= CAPTUREBLT;
+	}
+
+	int32_t width = 1920;
+	int32_t heigh = 1080;
+
+	BITMAP bm;
+	HBITMAP__ *bmp = new HBITMAP__();
+
+	GetObject(bmp, sizeof(BITMAP), &bm);
+	BYTE *bits = static_cast<BYTE*>(bm.bmBits);
+	BITMAPINFO bi = { 0 };
+	BITMAPINFOHEADER *head = &bi.bmiHeader;
+	head->biSize = sizeof(BITMAPINFOHEADER);
+	head->biBitCount = 32;
+	head->biWidth = width;
+	head->biHeight =  -heigh;
+	head->biPlanes = 1;
+	bmp = CreateDIBSection(dc, &bi, DIB_RGB_COLORS, (void**)&bits, nullptr, 0);
+	SelectObject(dc, bmp);
+
+	BitBlt(dc, 0, 0, width, heigh, src_dc, 0, 0, rop);
+
+	ImageHelper::SaveBitmapToFile(bmp, "bmp.bmp");
+	std::cout << "Hello World End!\n";
+
 }
-
-// 运行程序: Ctrl + F5 或调试 >“开始执行(不调试)”菜单
-// 调试程序: F5 或调试 >“开始调试”菜单
-
-// 入门使用技巧: 
-//   1. 使用解决方案资源管理器窗口添加/管理文件
-//   2. 使用团队资源管理器窗口连接到源代码管理
-//   3. 使用输出窗口查看生成输出和其他消息
-//   4. 使用错误列表窗口查看错误
-//   5. 转到“项目”>“添加新项”以创建新的代码文件，或转到“项目”>“添加现有项”以将现有代码文件添加到项目
-//   6. 将来，若要再次打开此项目，请转到“文件”>“打开”>“项目”并选择 .sln 文件
