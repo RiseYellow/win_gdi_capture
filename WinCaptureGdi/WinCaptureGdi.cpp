@@ -46,6 +46,10 @@ int main()
 	BitBlt(dc, 0, 0, width, heigh, src_dc, 0, 0, rop);
 
 	ImageHelper::SaveBitmapToFile(bmp, "bmp.bmp");
+
+	DeleteDC(dc);
+	ReleaseDC(NULL, src_dc);
+
 	std::cout << "Hello World End!\n";
 
 }
